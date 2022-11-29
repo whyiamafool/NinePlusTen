@@ -17,12 +17,22 @@ void DrawMenu(FEHIcon::Icon *top, FEHIcon::Icon *bottom) {
     LCD.Update();
 }
 
-void DrawBack(FEHIcon::Icon *back) {
+void DrawBack() {
     FEHImage backimg;
 
     backimg.Open("BackFEH.pic");
     backimg.Draw(7, 7);
     backimg.Close();
+
+    LCD.Update();
+}
+
+void DrawRules() {
+    FEHImage rulesimg;
+
+    rulesimg.Open("InstructionsFEH.pic");
+    rulesimg.Draw(0, 30);
+    rulesimg.Close();
 
     LCD.Update();
 }
@@ -39,8 +49,6 @@ int main() {
     FEHIcon::Icon top[2], bottom[4], back[1];
     DrawMenu(top, bottom);
 
-    FEHImage instructions;
-
     while (1) {
         LCD.ClearBuffer();
 
@@ -50,20 +58,20 @@ int main() {
         if (menuState == 0) { // 0 represents the main menu
             if (top[0].Pressed(x, y, 1)) {
                 LCD.Clear();
-                DrawBack(back);
+                DrawBack();
                 menuState = 1;
             
                 // single player game goes here bruh
                 LCD.WriteAt("game", 87, 111);
             } else if (top[1].Pressed(x, y, 1)) {
                 LCD.Clear();
-                DrawBack(back);
+                DrawBack();
                 menuState = 1;
                 
                 LCD.WriteAt("game", 87, 111);
             } else if (bottom[0].Pressed(x, y, 1)){
                 LCD.Clear();
-                DrawBack(back);
+                DrawBack();
                 menuState = 1;
 
                 LCD.DrawRectangle(75, 5, 240, 35);
@@ -72,22 +80,20 @@ int main() {
                 LCD.WriteRC("Losses: 12", 7, 8);
             } else if (bottom[1].Pressed(x, y, 1)){
                 LCD.Clear();
-                DrawBack(back);
+                DrawBack();
                 menuState = 1;
-                // rules page
 
-                instructions.Open("InstructionsFEH.pic");
-                instructions.Draw(0, 30);
-                instructions.Close();
+                // rules page
+                DrawRules();
             } else if (bottom[2].Pressed(x, y, 1 )){
                 LCD.Clear();
-                DrawBack(back);
+                DrawBack();
                 menuState = 1;
                 // theme select
                 LCD.WriteRC("Restricted Area Please Leave", 6, 9);
             } else if (bottom[3].Pressed(x, y, 1)){
                 LCD.Clear();
-                DrawBack(back);
+                DrawBack();
                 menuState = 1;
 
                 LCD.WriteRC("Written By:", 5, 8);
