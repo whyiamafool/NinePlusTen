@@ -12,6 +12,7 @@ void DrawMenu(FEHIcon::Icon *menu) {
     FEHIcon::DrawIconArray(menu, 2, 2, 10, 10, 5, 5, menu_labels, GOLD, GREEN);
     
     LCD.Update();
+    LCD.Update();
 }
 
 /* Entry point to the application */
