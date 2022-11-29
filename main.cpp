@@ -2,27 +2,42 @@
 #include "FEHUtility.h"
 #include "FEHImages.h"
 
-void DrawMenu(FEHIcon::Icon *menu) {
-    LCD.DrawRectangle(0,0,320,240);
-    LCD.Update();
+void DrawMenu(FEHIcon::Icon *top, FEHIcon::Icon *bottom) {
+    FEHImage titlescreen;
 
-    //FEHIcon::Icon menu[4];
+    titlescreen.Open("Title ScreenFEH.pic");
+    titlescreen.Draw(34, 65);
+    titlescreen.Close();
 
-    char menu_labels[4][20] = {"PLAY","STATS","HOW TO PLAY","CREDITS"};
-    FEHIcon::DrawIconArray(menu, 2, 2, 10, 10, 5, 5, menu_labels, GOLD, GREEN);
+    char top_menu[2][20] = {"SINGLE", "MULTI"};
+    char bottom_menu[4][20] = {"STATS", "RULES", "THEME", "CREDS"};
+    FEHIcon::DrawIconArray(top, 1, 2, 130, 55, 50, 50, top_menu, RED, RED);
+    FEHIcon::DrawIconArray(bottom, 1, 4, 200, 10, 10, 10, bottom_menu, RED, RED);
     
     LCD.Update();
+}
+
+void DrawBack(FEHIcon::Icon *back) {
+    FEHImage backimg;
+
+    backimg.Open("BackFEH.pic");
+    backimg.Draw(7, 7);
+    backimg.Close();
+
     LCD.Update();
+}
+
+void DrawBoard() {
+
 }
 
 /* Entry point to the application */
 int main() {
 
     float x, y, xtrash, ytrash;
-    int menuState = -1;
-    FEHIcon::Icon menu[4], back[1];
-    char backlbl[1][20] = {"BACK"};
-    DrawMenu(menu);
+    int menuState = 0;
+    FEHIcon::Icon top[2], bottom[4], back[1];
+    DrawMenu(top, bottom);
 
     FEHImage instructions;
 
@@ -31,52 +46,62 @@ int main() {
 
         while (!LCD.Touch(&xtrash, &ytrash)) { }
         while (LCD.Touch(&x, &y)) { }
-        
-        //LCD.DrawRectangle(0,0,320,240);
 
-        if (menuState == -1) { // -1 represents main menu
-            if (menu[0].Pressed(x, y, 1)) {
+        if (menuState == 0) { // 0 represents the main menu
+            if (top[0].Pressed(x, y, 1)) {
                 LCD.Clear();
-                menuState = 0;
-                FEHIcon::DrawIconArray(back, 1, 1, 5, 200, 5, 250, backlbl, WHITE, WHITE);
-                LCD.WriteAt("Game Started!", 87, 111);
-            } else if (menu[1].Pressed(x, y, 1)) {
-                LCD.Clear();
+                DrawBack(back);
                 menuState = 1;
-                FEHIcon::DrawIconArray(back, 1, 1, 5, 200, 5, 250, backlbl, WHITE, WHITE);
+            
+                // single player game goes here bruh
+                LCD.WriteAt("game", 87, 111);
+            } else if (top[1].Pressed(x, y, 1)) {
+                LCD.Clear();
+                DrawBack(back);
+                menuState = 1;
+                
+                LCD.WriteAt("game", 87, 111);
+            } else if (bottom[0].Pressed(x, y, 1)){
+                LCD.Clear();
+                DrawBack(back);
+                menuState = 1;
+
                 LCD.DrawRectangle(75, 5, 240, 35);
                 LCD.WriteRC("STATISTICS", 1, 11);
-    
                 LCD.WriteRC("Wins: 5", 6, 9);
                 LCD.WriteRC("Losses: 12", 7, 8);
-            } else if (menu[2].Pressed(x, y, 1)) {
+            } else if (bottom[1].Pressed(x, y, 1)){
                 LCD.Clear();
-                menuState = 2;
-                FEHIcon::DrawIconArray(back, 1, 1, 5, 200, 5, 250, backlbl, WHITE, WHITE);
+                DrawBack(back);
+                menuState = 1;
+                // rules page
 
                 instructions.Open("InstructionsFEH.pic");
-                instructions.Draw(0, 0);
+                instructions.Draw(0, 30);
                 instructions.Close();
-    
-                //LCD.WriteRC("Instructions:", 5, 7);
-                //LCD.WriteRC("(imagine)", 7, 9);
-            } else if (menu[3].Pressed(x, y, 1)) {
+            } else if (bottom[2].Pressed(x, y, 1 )){
                 LCD.Clear();
-                menuState = 3;
-                FEHIcon::DrawIconArray(back, 1, 1, 5, 200, 5, 250, backlbl, WHITE, WHITE);
-    
+                DrawBack(back);
+                menuState = 1;
+                // theme select
+                LCD.WriteRC("Restricted Area Please Leave", 6, 9);
+            } else if (bottom[3].Pressed(x, y, 1)){
+                LCD.Clear();
+                DrawBack(back);
+                menuState = 1;
+
                 LCD.WriteRC("Written By:", 5, 8);
                 LCD.WriteRC("Aditya Chittari", 7, 6);
                 LCD.WriteRC("Aaryan Makavana", 8, 6);
             }
-        } else {
-            if (back[0].Pressed(x, y, 1)) {
+        } else { // any of the sub-menus / games
+            if (7 < x && x < (7 + 42) && 7 < y && y < (7 + 14)) {
                 LCD.Clear();
-                menuState = -1;
-                DrawMenu(menu);
+                DrawMenu(top, bottom);
+                menuState = 0;
             }
         }
-
+        
         LCD.Update();
 
         Sleep(0.125);
