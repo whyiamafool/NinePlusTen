@@ -53,9 +53,9 @@ int main() {
                 menuState = 2;
                 FEHIcon::DrawIconArray(back, 1, 1, 5, 200, 5, 250, backlbl, WHITE, WHITE);
 
-                //instructions.Open("InstructionsFEH.pic");
-                //instructions.Draw(0, 0);
-                //instructions.Close();
+                instructions.Open("InstructionsFEH.pic");
+                instructions.Draw(0, 0);
+                instructions.Close();
     
                 //LCD.WriteRC("Instructions:", 5, 7);
                 //LCD.WriteRC("(imagine)", 7, 9);
