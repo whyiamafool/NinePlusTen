@@ -3,6 +3,7 @@
 #include "FEHImages.h"
 #include "FEHRandom.h"
 #include <iostream>
+#include <string>
 
 #define CARDWIDTH 40
 #define CARDHEIGHT 50
@@ -30,12 +31,6 @@ class Deck {
         int dealtcardindex;
 };
 
-/*void Deck::printDeck() {
-    for (int i = 0; i < 52; i++) {
-        std::cout << i << ": " << deck[i] << std::endl;
-    }
-}*/
-
 Deck::Deck() {
     dealtcardindex = 0;
     for (int i = 0; i < 52; i++) {
@@ -46,7 +41,7 @@ Deck::Deck() {
 char* Deck::DrawRandomCard() { // issues a unique random card. crashes when all 52 cards have been dealt. tech no need to fix
     int randIndex = Random.RandInt() % 51;
 
-    std::cout << "rI(og): " << randIndex << ", DRCoutput: " << deck[randIndex] <<"\n";
+    //std::cout << "rI(og): " << randIndex << ", DRCoutput: " << deck[randIndex] <<"\n"; debugging lines
 
     for (int i = 0; i < dealtcardindex; i++) {
 		while (strcmp(dealtcards[i], deck[randIndex]) == 0) {
@@ -58,26 +53,30 @@ char* Deck::DrawRandomCard() { // issues a unique random card. crashes when all 
 	strcpy(dealtcards[dealtcardindex], deck[randIndex]);
 	dealtcardindex++;
 
-    std::cout << "rI(ed): " << randIndex << ", DRCoutput: " << deck[randIndex] <<"\n";
+    //std::cout << "rI(ed): " << randIndex << ", DRCoutput: " << deck[randIndex] <<"\n"; debugging lines
 
     return deck[randIndex];
 }
+
 
 class Hand {
     public: 
         Hand(int player);
         void Hit(Deck *deckptr);
         void DrawHand(int theme);
+        int getHandValue();
     private:
         int playerNo;
         FEHIcon::Icon handIconArray[11];
         char cardsInHand[11][20];
         int noOfCards;
+        int handValue;
 };
 
 Hand::Hand(int player) {
     playerNo = player;
     noOfCards = 0;
+    handValue = 0;
     for (int i = 0; i < 52; i++) {
         strcpy(cardsInHand[i], "");
     }
@@ -85,10 +84,28 @@ Hand::Hand(int player) {
 
 void Hand::Hit(Deck *deckptr) {
     strcpy(cardsInHand[noOfCards], deckptr -> DrawRandomCard());
-    for (int i = 0; i <= noOfCards; i++) {
+    std::cout << "debug: " << cardsInHand[noOfCards][0] << std::endl;
+    /*for (int i = 0; i <= noOfCards; i++) {
         //std::cout << "HitR: " << cardsInHand[i]<<"\n"<<"***"<<"\n";
-    }
+    }*/
     noOfCards++;
+}
+
+// TODO: DETERMINE HOW TO HANDLE THE VALUE OF AN ACE.
+
+int Hand::getHandValue() {
+    for (int i = 0; i < noOfCards; i++) {
+        if (cardsInHand[i][0] == 'K' || cardsInHand[i][0] == 'Q' || cardsInHand[i][0] == 'J' || cardsInHand[i][0] == '1') {
+            handValue += 10;
+        } else if (cardsInHand[i][0] == 'A') {
+            handValue += 1; //OR 11???
+            //i.. i don't know what to do here...
+        } else {
+            handValue += (cardsInHand[i][0] - '0');
+        }
+    }
+
+    return handValue;
 }
 
 void Hand::DrawHand(int theme) {
@@ -288,18 +305,14 @@ int main() {
                 // GAME CODE
                 player1.Hit(&deck);
                 player1.Hit(&deck);
-                player1.Hit(&deck);
-                player1.Hit(&deck);
                 player1.DrawHand(theme);
+                LCD.WriteAt(player1.getHandValue(), 150, 160);
 
                 player2.Hit(&deck);
                 player2.Hit(&deck);
                 player2.Hit(&deck);
-                player2.Hit(&deck);
-                player2.Hit(&deck);
-                player2.Hit(&deck);
-                player2.Hit(&deck);
                 player2.DrawHand(theme);
+                LCD.WriteAt(player2.getHandValue(), 150, 70);
 
             } else if (top[1].Pressed(x, y, 1)) {
                 LCD.Clear();
