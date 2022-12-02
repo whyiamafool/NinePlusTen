@@ -338,6 +338,16 @@ void DrawThemeSelect(int theme) {
     LCD.Update();
 }
 
+void DrawCredits() {
+    FEHImage creditsimg;
+
+    creditsimg.Open("CreditsFEH.pic");
+    creditsimg.Draw(0, 30);
+    creditsimg.Close();
+
+    LCD.Update();
+}
+
 void DrawBoard(int theme) {
     /*FEHImage casinoboard;
 
@@ -574,9 +584,7 @@ int main() {
                 DrawBack();
                 menuState = 1;
 
-                LCD.WriteRC("Written By:", 5, 8);
-                LCD.WriteRC("Aditya Chittari", 7, 6);
-                LCD.WriteRC("Aaryan Makavana", 8, 6);
+                DrawCredits();
             } else if (6 <= x && x < (6 + 12) && 6 <= y && y < (6 + 9)) {
                 repeat = 0;
             }
