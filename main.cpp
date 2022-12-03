@@ -16,14 +16,12 @@
 #define BUCKEYEGRAY 0x666666
 #define BUCKEYECARDGRAY 0xCBCBD1
 
-
 #define CPUTime 0.5
 
 class Deck {
     public:
         Deck();
         char* DrawRandomCard();
-        //void printDeck();
         void resetDeck();
         char deck[52][20] = {
             "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "10S", "JS", "QS", "KS", "AS",
@@ -46,8 +44,6 @@ Deck::Deck() {
 char* Deck::DrawRandomCard() { // issues a unique random card. crashes when all 52 cards have been dealt. tech no need to fix
     int randIndex = Random.RandInt() % 51;
 
-    //std::cout << "rI(og): " << randIndex << ", DRCoutput: " << deck[randIndex] <<"\n"; debugging lines
-
     for (int i = 0; i < dealtcardindex; i++) {
 		while (strcmp(dealtcards[i], deck[randIndex]) == 0) {
 			randIndex = Random.RandInt() % 51;
@@ -57,8 +53,6 @@ char* Deck::DrawRandomCard() { // issues a unique random card. crashes when all 
 
 	strcpy(dealtcards[dealtcardindex], deck[randIndex]);
 	dealtcardindex++;
-
-    //std::cout << "rI(ed): " << randIndex << ", DRCoutput: " << deck[randIndex] <<"\n"; debugging lines
 
     return deck[randIndex];
 }
@@ -111,14 +105,8 @@ void Hand::Hit(Deck *deckptr) {
         noOfAces++;
     }
 
-    //std::cout << "debug: " << cardsInHand[noOfCards][0] << std::endl;
-    /*for (int i = 0; i <= noOfCards; i++) {
-        //std::cout << "HitR: " << cardsInHand[i]<<"\n"<<"***"<<"\n";
-    }*/
     noOfCards++;
 }
-
-// TODO: DETERMINE HOW TO HANDLE THE VALUE OF AN ACE.
 
 int Hand::getNoOfCards() {
     return noOfCards;
@@ -180,11 +168,6 @@ void Hand::DrawHand(int theme) {
             LCD.FillRectangle(widthmargin, heightmargin, noOfCards * CARDWIDTH, CARDHEIGHT);
             FEHIcon::DrawIconArray(handIconArray, 1, noOfCards, heightmargin, 5, widthmargin, widthmargin, cardsInHand, BLACK, BLACK);
         }
-
-        /*LCD.SetFontColor(SAND); //0x076F94
-        LCD.FillRectangle(widthmargin, heightmargin, noOfCards * CARDWIDTH, CARDHEIGHT);
-        FEHIcon::DrawIconArray(handIconArray, 1, noOfCards, heightmargin, 5, widthmargin, widthmargin, cardsInHand, CORAL, CORAL);*/
-        
     } else if (playerNo == 2) {
         int widthmargin = (320 - (noOfCards * CARDWIDTH))/2;
         int heightmargin = (240 - 5) - CARDHEIGHT;
@@ -202,10 +185,6 @@ void Hand::DrawHand(int theme) {
             LCD.FillRectangle(widthmargin, 5, noOfCards * CARDWIDTH, CARDHEIGHT);
             FEHIcon::DrawIconArray(handIconArray, 1, noOfCards, 5, heightmargin, widthmargin, widthmargin, cardsInHand, BLACK, BLACK);
         }
-
-        /*LCD.SetFontColor(SAND); //0x076F94
-        LCD.FillRectangle(widthmargin, 5, noOfCards * CARDWIDTH, CARDHEIGHT);
-        FEHIcon::DrawIconArray(handIconArray, 1, noOfCards, 5, heightmargin, widthmargin, widthmargin, cardsInHand, CORAL, CORAL);*/
     }
 }
 
@@ -267,7 +246,8 @@ int Hand::CPUAIDecision(int theme, Hand p1) { // CPU = player 2
                 hitOrNotToHit = 1;
             }
 
-            std::cout << "pM: " << probMultiplier << std::endl;
+            //debugging lines
+            //std::cout << "pM: " << probMultiplier << std::endl;
         }
     } else {
         float probMultiplier = (21 - handValue) / 13.0;
@@ -275,26 +255,13 @@ int Hand::CPUAIDecision(int theme, Hand p1) { // CPU = player 2
             hitOrNotToHit = 1;
         }
 
-        std::cout << "pM: " << probMultiplier << std::endl;
+        //std::cout << "pM: " << probMultiplier << std::endl;
     }
-    
-    /*if (handValue <= 11) {
-        hitOrNotToHit = 1;
-    } else {
-        float probMultiplier = (21 - handValue) / 13.0;
-        if (probMultiplier > yoloCoefficient) {
-            hitOrNotToHit = 1;
-        }
-
-        std::cout << "pM: " << probMultiplier << std::endl;
-    }*/
         
-    std::cout << "yC: " << yoloCoefficient << std::endl;
+    //std::cout << "yC: " << yoloCoefficient << std::endl;
 
     return hitOrNotToHit;
 }
-
-// TODO: function prototypes
 
 void DrawMenu(FEHIcon::Icon *top, FEHIcon::Icon *bottom) {
     FEHImage titlescreen;
@@ -381,13 +348,6 @@ void DrawCredits() {
 }
 
 void DrawBoard(int theme) {
-    /*FEHImage casinoboard;
-
-    casinoboard.Open("CasinoBoardFEH.pic");
-    casinoboard.Draw(0, 0);
-    casinoboard.Close();
-
-    LCD.Update();*/
 
     if (theme == 0) {
         LCD.SetFontColor(DARKGREEN);
@@ -458,9 +418,6 @@ void DrawArrow(int player, int theme) {
             uparrowimg.Close();
         }
     }
-
-
-    
 }
 
 void DrawEE() {
@@ -470,27 +427,6 @@ void DrawEE() {
     EEimg.Draw(286, 197);
     EEimg.Close();
 }
-
-
-/*void getWinCondition(Hand player1hand, Hand player2hand) { // 22 for bust,
-    if (player1hand.getHandValue() >= 22) { // bust win conditions
-        LCD.WriteAt("Player 2 Wins!!", 160, 120);
-    } else if (player2hand.getHandValue() >= 22) {
-        LCD.WriteAt("Player 1 Wins!!", 160, 120);
-    } else if (player1hand.getHandValue() <= 21 && player2hand.getHandValue() <=21){ // below or equal 21
-        if (player1hand.getHandValue() > player2hand.getHandValue()) { // closest to 21 win conditions
-            LCD.WriteAt("Player 1 Wins!!", 160, 120);
-        } else if (player1hand.getHandValue() < player2hand.getHandValue()) {
-            LCD.WriteAt("Player 2 Wins!!", 160, 120);
-        } else { // player hand values are equal, number of cards condition
-            if (player1hand.getNoOfCards() < player2hand.getNoOfCards()) {
-            LCD.WriteAt("Player 1 Wins!!", 160, 120);
-            } else if (player1hand.getNoOfCards() > player2hand.getNoOfCards()){
-            LCD.WriteAt("Player 2 Wins!!", 160, 120);
-            }
-        }
-    } 
-}*/
 
 /* Entry point to the application */
 int main() {
@@ -514,22 +450,19 @@ int main() {
     DrawMenu(top, bottom);
 
     Deck deck;
-    //Deck *deckptr;
-    //deckptr = &deck;
 
     Hand player1(1), player2(2);
 
+    /* debugging lines
     for (int smth = 0; smth < 52; smth++) {
         std::cout << deck.deck[smth] << std::endl;
-    }
+    }*/
 
     while (repeat) {
         LCD.ClearBuffer();
 
         while (!LCD.Touch(&xtrash, &ytrash)) { }
         while (LCD.Touch(&x, &y)) { }
-
-        //LCD.Clear(BLACK);
 
         if (menuState == 0) { // 0 represents the main menu
             if (top[0].Pressed(x, y, 1)) {
@@ -551,37 +484,15 @@ int main() {
                 player1.DrawHand(theme);
                 LCD.WriteAt("Count:", 110, 165);
                 LCD.WriteAt(player1.getHandValue(), 185, 165);
-                //LCD.WriteAt(player1.getAces(), 180, 160);
 
                 player2.Hit(&deck);
                 player2.Hit(&deck);
                 player2.DrawHand(theme);
                 LCD.WriteAt("Count:", 110, 60);
                 LCD.WriteAt(player2.getHandValue(), 185, 60);
-                //LCD.WriteAt(player2.getAces(), 180, 70);
 
                 LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
                 DrawArrow(1, theme);
-
-                /*LCD.Clear();
-                DrawBoard(theme);
-                menuState = 3; // 3 represents game is in progress
-                DrawHitStand(hit, stand, theme);
-
-                // GAME CODE
-                player1.Hit(&deck);
-                player1.Hit(&deck);
-                player1.DrawHand(theme);
-                LCD.WriteAt("Count:", 110, 160);
-                LCD.WriteAt(player1.getHandValue(), 185, 160);
-                //LCD.WriteAt(player1.getAces(), 180, 160);
-
-                player2.Hit(&deck);
-                player2.Hit(&deck);
-                player2.DrawHand(theme);
-                LCD.WriteAt("Count:", 110, 70);
-                LCD.WriteAt(player2.getHandValue(), 185, 70);
-                //LCD.WriteAt(player2.getAces(), 180, 70);*/
 
             } else if (top[1].Pressed(x, y, 1)) {
                 turn = 1;
@@ -602,14 +513,12 @@ int main() {
                 player1.DrawHand(theme);
                 LCD.WriteAt("Count:", 110, 165);
                 LCD.WriteAt(player1.getHandValue(), 185, 165);
-                //LCD.WriteAt(player1.getAces(), 180, 160);
 
                 player2.Hit(&deck);
                 player2.Hit(&deck);
                 player2.DrawHand(theme);
                 LCD.WriteAt("Count:", 110, 60);
                 LCD.WriteAt(player2.getHandValue(), 185, 60);
-                //LCD.WriteAt(player2.getAces(), 180, 70);
 
                 LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
                 DrawArrow(1, theme);
@@ -634,11 +543,6 @@ int main() {
                 LCD.WriteAt(p2L, 198, 170);
                 LCD.WriteAt("Ties: ", 118, 190);
                 LCD.WriteAt(p2T, 188, 190);
-
-                /*LCD.DrawRectangle(75, 5, 240, 35);
-                LCD.WriteRC("STATISTICS", 1, 11);
-                LCD.WriteRC("Wins: 5", 6, 9);
-                LCD.WriteRC("Losses: 12", 7, 8);*/
             } else if (bottom[1].Pressed(x, y, 1)){
                 LCD.Clear();
                 DrawBack();
@@ -693,10 +597,6 @@ int main() {
                 if (EE >= 7) {
                     DrawEE();
                 }
-                LCD.SetFontColor(GREEN);
-                LCD.DrawRectangle(86, 133, 148, 11);
-
-                std::cout << "EE: " << EE << std::endl;
                 
             }
 
@@ -971,11 +871,6 @@ int main() {
             menuState = 0;
             gameOver = 0;
         }
-        
-        std::cout << "MS: " << menuState << std::endl;
-        
-        //LCD.WriteAt(x, 100, 100);
-        //LCD.WriteAt(y, 100, 120);
         
         LCD.Update();
 
