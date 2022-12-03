@@ -14,6 +14,10 @@
 
 #define BUCKEYERED 0xBB0000
 #define BUCKEYEGRAY 0x666666
+#define BUCKEYECARDGRAY 0xCBCBD1
+
+
+#define CPUTime 0.5
 
 class Deck {
     public:
@@ -76,7 +80,7 @@ class Hand {
         int getHandValue();
         int getAces(); //debugger
         void resetHand(int player);
-        int CPUAIDecision(int theme);
+        int CPUAIDecision(int theme, Hand p1);
     private:
         int playerNo;
         FEHIcon::Icon handIconArray[11];
@@ -172,7 +176,7 @@ void Hand::DrawHand(int theme) {
             LCD.FillRectangle(widthmargin, heightmargin, noOfCards * CARDWIDTH, CARDHEIGHT);
             FEHIcon::DrawIconArray(handIconArray, 1, noOfCards, heightmargin, 5, widthmargin, widthmargin, cardsInHand, CORAL, CORAL);
         } else if (theme == 2) {
-            LCD.SetFontColor(GHOSTWHITE); //0x076F94
+            LCD.SetFontColor(BUCKEYECARDGRAY); //0x076F94
             LCD.FillRectangle(widthmargin, heightmargin, noOfCards * CARDWIDTH, CARDHEIGHT);
             FEHIcon::DrawIconArray(handIconArray, 1, noOfCards, heightmargin, 5, widthmargin, widthmargin, cardsInHand, BLACK, BLACK);
         }
@@ -194,7 +198,7 @@ void Hand::DrawHand(int theme) {
             LCD.FillRectangle(widthmargin, 5, noOfCards * CARDWIDTH, CARDHEIGHT);
             FEHIcon::DrawIconArray(handIconArray, 1, noOfCards, 5, heightmargin, widthmargin, widthmargin, cardsInHand, CORAL, CORAL);
         } else if (theme == 2) {
-            LCD.SetFontColor(GHOSTWHITE); //0x076F94
+            LCD.SetFontColor(BUCKEYECARDGRAY); //0x076F94
             LCD.FillRectangle(widthmargin, 5, noOfCards * CARDWIDTH, CARDHEIGHT);
             FEHIcon::DrawIconArray(handIconArray, 1, noOfCards, 5, heightmargin, widthmargin, widthmargin, cardsInHand, BLACK, BLACK);
         }
@@ -205,15 +209,15 @@ void Hand::DrawHand(int theme) {
     }
 }
 
-int Hand::CPUAIDecision(int theme) { // CPU = player 2
+int Hand::CPUAIDecision(int theme, Hand p1) { // CPU = player 2
     if (theme == 0) {
         LCD.SetFontColor(theme);
         LCD.FillCircle(140, 85, 5);
-        Sleep(0.75);
+        Sleep(CPUTime);
         LCD.FillCircle(160, 85, 5);
-        Sleep(0.75);
+        Sleep(CPUTime);
         LCD.FillCircle(180, 85, 5);
-        Sleep(0.75);
+        Sleep(CPUTime);
         LCD.SetFontColor(FORESTGREEN);
         LCD.FillCircle(140, 85, 5);
         LCD.FillCircle(160, 85, 5);
@@ -221,11 +225,11 @@ int Hand::CPUAIDecision(int theme) { // CPU = player 2
     } else if (theme == 1) {
         LCD.SetFontColor(CORAL);
         LCD.FillCircle(140, 85, 5);
-        Sleep(0.75);
+        Sleep(CPUTime);
         LCD.FillCircle(160, 85, 5);
-        Sleep(0.75);
+        Sleep(CPUTime);
         LCD.FillCircle(180, 85, 5);
-        Sleep(0.75);
+        Sleep(CPUTime);
         LCD.SetFontColor(DARKCYAN);
         LCD.FillCircle(140, 85, 5);
         LCD.FillCircle(160, 85, 5);
@@ -233,11 +237,11 @@ int Hand::CPUAIDecision(int theme) { // CPU = player 2
     } else if (theme == 2) {
         LCD.SetFontColor(BLACK);
         LCD.FillCircle(140, 85, 5);
-        Sleep(0.75);
+        Sleep(CPUTime);
         LCD.FillCircle(160, 85, 5);
-        Sleep(0.75);
+        Sleep(CPUTime);
         LCD.FillCircle(180, 85, 5);
-        Sleep(0.75);
+        Sleep(CPUTime);
         LCD.SetFontColor(BUCKEYEGRAY);
         LCD.FillCircle(140, 85, 5);
         LCD.FillCircle(160, 85, 5);
@@ -246,8 +250,25 @@ int Hand::CPUAIDecision(int theme) { // CPU = player 2
 
     int hitOrNotToHit = 0;
 
-    if (handValue <= 11) {
+    if (p1.getHandValue() > 21) {
+        //stand.
+    } else if (handValue <= 11) {
         hitOrNotToHit = 1;
+    } else if (handValue > p1.getHandValue()) { // risk starts here
+        //stand.
+    } else if (handValue < p1.getHandValue()) {
+        hitOrNotToHit = 1;
+    } else if (handValue = p1.getHandValue()) {
+        if (noOfCards > p1.getNoOfCards()) {
+            hitOrNotToHit = 1;
+        } else if (noOfCards == p1.getNoOfCards()) {
+            float probMultiplier = (21 - handValue) / 13.0;
+            if (probMultiplier > yoloCoefficient) {
+                hitOrNotToHit = 1;
+            }
+
+            std::cout << "pM: " << probMultiplier << std::endl;
+        }
     } else {
         float probMultiplier = (21 - handValue) / 13.0;
         if (probMultiplier > yoloCoefficient) {
@@ -256,6 +277,17 @@ int Hand::CPUAIDecision(int theme) { // CPU = player 2
 
         std::cout << "pM: " << probMultiplier << std::endl;
     }
+    
+    /*if (handValue <= 11) {
+        hitOrNotToHit = 1;
+    } else {
+        float probMultiplier = (21 - handValue) / 13.0;
+        if (probMultiplier > yoloCoefficient) {
+            hitOrNotToHit = 1;
+        }
+
+        std::cout << "pM: " << probMultiplier << std::endl;
+    }*/
         
     std::cout << "yC: " << yoloCoefficient << std::endl;
 
@@ -393,12 +425,50 @@ void DrawHitStand(FEHIcon::Icon *hit, FEHIcon::Icon *stand, int theme) {
         FEHIcon::DrawIconArray(hit, 1, 1, 100, 100, 20, 260, hitIcon, CORAL, CORAL);
         FEHIcon::DrawIconArray(stand, 1, 1, 100, 100, 260, 20, standIcon, CORAL, CORAL);
     } else if (theme == 2) { //buckeye theme
-        LCD.SetFontColor(GHOSTWHITE);
+        LCD.SetFontColor(BUCKEYECARDGRAY);
         LCD.FillRectangle(20, 100, 40, 40);
         LCD.FillRectangle(260, 100, 40, 40);
         FEHIcon::DrawIconArray(hit, 1, 1, 100, 100, 20, 260, hitIcon, BLACK, BLACK);
         FEHIcon::DrawIconArray(stand, 1, 1, 100, 100, 260, 20, standIcon, BLACK, BLACK);
     }
+}
+
+void DrawArrow(int player, int theme) {
+    FEHImage downarrowimg;
+    FEHImage uparrowimg;
+
+    if (player == 1) {
+        if (theme == 0 || theme == 2) {
+            downarrowimg.Open("Down Arrow (Black)FEH.pic");
+            downarrowimg.Draw(152, 138);
+            downarrowimg.Close();
+        } else {
+            downarrowimg.Open("Down Arrow (Coral)FEH.pic");
+            downarrowimg.Draw(152, 138);
+            downarrowimg.Close();
+        }
+    } else if (player == 2) {
+        if (theme == 0 || theme == 2) {
+            uparrowimg.Open("Up Arrow (Black)FEH.pic");
+            uparrowimg.Draw(152, 92);
+            uparrowimg.Close();
+        } else {
+            uparrowimg.Open("Up Arrow (Coral)FEH.pic");
+            uparrowimg.Draw(152, 92);
+            uparrowimg.Close();
+        }
+    }
+
+
+    
+}
+
+void DrawEE() {
+    FEHImage EEimg;
+
+    EEimg.Open("EEV2FEH.pic");
+    EEimg.Draw(286, 197);
+    EEimg.Close();
 }
 
 
@@ -426,6 +496,7 @@ void DrawHitStand(FEHIcon::Icon *hit, FEHIcon::Icon *stand, int theme) {
 int main() {
 
     int repeat = 1;
+    int EE = 0;
 
     float x, y, xtrash, ytrash;
     int menuState = 0;
@@ -490,6 +561,7 @@ int main() {
                 //LCD.WriteAt(player2.getAces(), 180, 70);
 
                 LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
+                DrawArrow(1, theme);
 
                 /*LCD.Clear();
                 DrawBoard(theme);
@@ -540,6 +612,7 @@ int main() {
                 //LCD.WriteAt(player2.getAces(), 180, 70);
 
                 LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
+                DrawArrow(1, theme);
                 
             } else if (bottom[0].Pressed(x, y, 1)){
                 LCD.Clear();
@@ -582,18 +655,19 @@ int main() {
             } else if (bottom[3].Pressed(x, y, 1)){
                 LCD.Clear();
                 DrawBack();
-                menuState = 1;
+                menuState = 10;
 
                 DrawCredits();
             } else if (6 <= x && x < (6 + 12) && 6 <= y && y < (6 + 9)) {
                 repeat = 0;
             }
 
-        } else if (menuState == 1 || menuState == 2) { // any of the sub-menus / games
+        } else if (menuState == 1 || menuState == 2 || menuState == 10) { // any of the sub-menus / games
             if (7 <= x && x < (7 + 42) && 7 <= y && y < (7 + 14)) {
                 LCD.Clear();
                 DrawMenu(top, bottom);
                 menuState = 0;
+                EE = 0;
             }
 
             if (menuState == 2) { // theme select
@@ -609,6 +683,23 @@ int main() {
                     DrawThemeSelect(theme);
                 }
             }
+
+            if (menuState == 10) {
+
+                if (86 <= x && x < (86+148) && 133 <= y && y < (133+11)) {
+                    EE++;
+                }
+                
+                if (EE >= 7) {
+                    DrawEE();
+                }
+                LCD.SetFontColor(GREEN);
+                LCD.DrawRectangle(86, 133, 148, 11);
+
+                std::cout << "EE: " << EE << std::endl;
+                
+            }
+
         } else if (menuState == 3) { // actual game (1-player)
             if (turn == 1) {
 
@@ -629,11 +720,12 @@ int main() {
                     LCD.WriteAt("CPU'S TURN", 100, 112);
                     passCount = 0;
                     
-                    CPUDecision = player2.CPUAIDecision(theme);
+                    CPUDecision = player2.CPUAIDecision(theme, player1);
                     if (CPUDecision == 0) {
                         passCount++;
                     } else if (CPUDecision == 1) {
                         player2.Hit(&deck);
+                        passCount = 0;
                     }
 
                     if (theme == 0) {
@@ -653,6 +745,7 @@ int main() {
                         LCD.SetFontColor(BLACK);
                     }
                     LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
+                    DrawArrow(1, theme);
 
                 } else if (stand[0].Pressed(x, y, 1)) {
                     LCD.Clear(BLACK);
@@ -670,11 +763,12 @@ int main() {
                     LCD.WriteAt("CPU'S TURN", 100, 112);
                     passCount++;
 
-                    CPUDecision = player2.CPUAIDecision(theme);
+                    CPUDecision = player2.CPUAIDecision(theme, player1);
                     if (CPUDecision == 0) {
                         passCount++;
                     } else if (CPUDecision == 1) {
                         player2.Hit(&deck);
+                        passCount = 0;
                     }
                     
                     if (theme == 0) {
@@ -694,6 +788,7 @@ int main() {
                         LCD.SetFontColor(BLACK);
                     }
                     LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
+                    DrawArrow(1, theme);
                 }
 
             }
@@ -736,7 +831,7 @@ int main() {
                     p2L++;
                     p1W++;
                     LCD.WriteRC("PLAYER 1 WINS", 6, 6);
-                } else if (player2.getNoOfCards() < player2.getNoOfCards()) {
+                } else if (player2.getNoOfCards() < player1.getNoOfCards()) {
                     p1L++;
                     p2W++;
                     LCD.WriteRC("PLAYER 2 WINS", 6, 6);
@@ -766,6 +861,7 @@ int main() {
                     player1.Hit(&deck);
 
                     LCD.WriteAt("PLAYER 2'S TURN", 70, 112);
+                    DrawArrow(2, theme);
                     turn++;
                     passCount = 0;
                 } else if (stand[0].Pressed(x, y, 1)) {
@@ -774,6 +870,7 @@ int main() {
                     DrawHitStand(hit, stand, theme);
 
                     LCD.WriteAt("PLAYER 2'S TURN", 70, 112);
+                    DrawArrow(2, theme);
                     turn++;
                     passCount++;
                 }
@@ -788,6 +885,7 @@ int main() {
                     player2.Hit(&deck);
 
                     LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
+                    DrawArrow(1, theme);
                     turn--;
                     passCount = 0;
                 } else if (stand[0].Pressed(x, y, 1)){
@@ -796,6 +894,7 @@ int main() {
                     DrawHitStand(hit, stand, theme);
 
                     LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
+                    DrawArrow(1, theme);
                     turn--;
                     passCount++;
                 }
@@ -840,7 +939,7 @@ int main() {
                     p2L++;
                     p1W++;
                     LCD.WriteRC("PLAYER 1 WINS", 6, 6);
-                } else if (player2.getNoOfCards() < player2.getNoOfCards()) {
+                } else if (player2.getNoOfCards() < player1.getNoOfCards()) {
                     p1L++;
                     p2W++;
                     LCD.WriteRC("PLAYER 2 WINS", 6, 6);
@@ -849,6 +948,8 @@ int main() {
                     p2T++;
                     LCD.WriteRC("TIE", 6, 12);
                 }
+
+                
             }
             
             player1.DrawHand(theme);
