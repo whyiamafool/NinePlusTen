@@ -21,6 +21,7 @@
 #define CPUTime 0.5
 
 // creates a class that holds all 52 card combinations, deals a random card, as well as a few variables holding the cards that have been dealt
+// Aditya
 class Deck {
     public:
         Deck();
@@ -45,6 +46,7 @@ Deck::Deck() {
     }
 }
 
+//Aditya
 char* Deck::DrawRandomCard() { // issues a unique random card
     int randIndex = Random.RandInt() % 51;
 
@@ -71,6 +73,7 @@ void Deck::resetDeck() {
 
 
 // holds the hand of a player. includes hand-specific variables. player 2 is the CPU in single player mode.
+// Aditya
 class Hand {
     public: 
         Hand(int player);
@@ -106,6 +109,7 @@ Hand::Hand(int player) {
 }
 
 // draws an unique random card
+// Aaryan & Aditya
 void Hand::Hit(Deck *deckptr) {
     strcpy(cardsInHand[noOfCards], deckptr -> DrawRandomCard());
     
@@ -122,6 +126,7 @@ int Hand::getNoOfCards() {
 }
 
 // getter for the value of the hand. includes some math on how the value of an Ace is calculated.
+// Aditya
 int Hand::getHandValue() {
     handValue = 0;
     aceDifferential = 0;
@@ -163,6 +168,7 @@ void Hand::resetHand(int player) {
 }
 
 // Uses the FEHIcon method to draw the hands
+// Aaryan & Aditya
 void Hand::DrawHand(int theme) {
     if (playerNo == 1) {
         int widthmargin = (320 - (noOfCards * CARDWIDTH))/2;
@@ -202,6 +208,7 @@ void Hand::DrawHand(int theme) {
 }
 
 // 'AI' that makes moves in single-player mode, the CPU is player 2.
+// Aditya
 int Hand::CPUAIDecision(int theme, Hand p1) {
     if (theme == 0) { // three thinking dots 
         LCD.SetFontColor(theme);
@@ -267,6 +274,8 @@ int Hand::CPUAIDecision(int theme, Hand p1) {
 
     return hitOrNotToHit;
 }
+
+// All draw functions worked on both Aaryan and Aditya
 
 // draws the menu
 void DrawMenu(FEHIcon::Icon *top, FEHIcon::Icon *bottom) {
@@ -443,6 +452,7 @@ void DrawEE() {
     EEimg.Close();
 }
 
+// worked on by both Aaryan and Aditya
 /* Entry point to the application */
 int main() {
 
@@ -897,4 +907,3 @@ int main() {
 
     return 0;
 }
-// woohoo!
