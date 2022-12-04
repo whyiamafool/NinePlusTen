@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 
+
+// constants for game, color hex codes, and cpu computational time
 #define CARDWIDTH 42
 #define CARDHEIGHT 50
 
@@ -18,6 +20,7 @@
 
 #define CPUTime 0.5
 
+// creates a class that holds all 52 card combinations, deals a random card, as well as a few variables holding the cards that have been dealt
 class Deck {
     public:
         Deck();
@@ -34,6 +37,7 @@ class Deck {
         int dealtcardindex;
 };
 
+// constructor, resets everything to 0
 Deck::Deck() {
     dealtcardindex = 0;
     for (int i = 0; i < 52; i++) {
@@ -41,7 +45,7 @@ Deck::Deck() {
     }
 }
 
-char* Deck::DrawRandomCard() { // issues a unique random card. crashes when all 52 cards have been dealt. tech no need to fix
+char* Deck::DrawRandomCard() { // issues a unique random card
     int randIndex = Random.RandInt() % 51;
 
     for (int i = 0; i < dealtcardindex; i++) {
@@ -57,6 +61,7 @@ char* Deck::DrawRandomCard() { // issues a unique random card. crashes when all 
     return deck[randIndex];
 }
 
+// resets everything to 0
 void Deck::resetDeck() {
     dealtcardindex = 0;
     for (int i = 0; i < 52; i++) {
@@ -65,6 +70,7 @@ void Deck::resetDeck() {
 }
 
 
+// holds the hand of a player. includes hand-specific variables. player 2 is the CPU in single player mode.
 class Hand {
     public: 
         Hand(int player);
@@ -86,6 +92,7 @@ class Hand {
         float yoloCoefficient;
 };
 
+// constructor, resets everything to 0
 Hand::Hand(int player) {
     playerNo = player;
     noOfCards = 0;
@@ -98,6 +105,7 @@ Hand::Hand(int player) {
     }
 }
 
+// draws an unique random card
 void Hand::Hit(Deck *deckptr) {
     strcpy(cardsInHand[noOfCards], deckptr -> DrawRandomCard());
     
@@ -108,10 +116,12 @@ void Hand::Hit(Deck *deckptr) {
     noOfCards++;
 }
 
+// getter for number of cards
 int Hand::getNoOfCards() {
     return noOfCards;
 }
 
+// getter for the value of the hand. includes some math on how the value of an Ace is calculated.
 int Hand::getHandValue() {
     handValue = 0;
     aceDifferential = 0;
@@ -119,14 +129,14 @@ int Hand::getHandValue() {
     for (int i = 0; i < noOfCards; i++) {
         if (cardsInHand[i][0] == 'K' || cardsInHand[i][0] == 'Q' || cardsInHand[i][0] == 'J' || cardsInHand[i][0] == '1') {
             handValue += 10;
-        } else if (cardsInHand[i][0] == 'A') {
+        } else if (cardsInHand[i][0] == 'A') { // by default, the value of an Ace is 11
             handValue += 11;
         } else {
             handValue += (cardsInHand[i][0] - '0');
         }
     }
 
-    while (handValue > 21 && noOfAces > aceDifferential) {
+    while (handValue > 21 && noOfAces > aceDifferential) { // the value of an Ace only changes when the count is over 21 and there is an Ace to change the value of
         handValue -= 10;
         aceDifferential++;
     }
@@ -134,10 +144,12 @@ int Hand::getHandValue() {
     return handValue;
 }
 
+// getter for the number of Aces
 int Hand::getAces() {
     return noOfAces;
 }
 
+// resets everything to 0
 void Hand::resetHand(int player) {
     playerNo = player;
     noOfCards = 0;
@@ -150,6 +162,7 @@ void Hand::resetHand(int player) {
     }
 }
 
+// Uses the FEHIcon method to draw the hands
 void Hand::DrawHand(int theme) {
     if (playerNo == 1) {
         int widthmargin = (320 - (noOfCards * CARDWIDTH))/2;
@@ -188,8 +201,9 @@ void Hand::DrawHand(int theme) {
     }
 }
 
-int Hand::CPUAIDecision(int theme, Hand p1) { // CPU = player 2
-    if (theme == 0) {
+// 'AI' that makes moves in single-player mode, the CPU is player 2.
+int Hand::CPUAIDecision(int theme, Hand p1) {
+    if (theme == 0) { // three thinking dots 
         LCD.SetFontColor(theme);
         LCD.FillCircle(140, 85, 5);
         Sleep(CPUTime);
@@ -227,21 +241,21 @@ int Hand::CPUAIDecision(int theme, Hand p1) { // CPU = player 2
         LCD.FillCircle(180, 85, 5);
     }
 
-    int hitOrNotToHit = 0;
+    int hitOrNotToHit = 0; // default = stand
 
     if (p1.getHandValue() > 21) {
-        //stand.
+        //stand as game is over.
     } else if (handValue <= 11) {
-        hitOrNotToHit = 1;
+        hitOrNotToHit = 1; // hit since it is impossible to bust with a count under or equal to 11
     } else if (handValue > p1.getHandValue()) { // risk starts here
-        //stand.
+        //stand since the CPU is winning currently
     } else if (handValue < p1.getHandValue()) {
-        hitOrNotToHit = 1;
+        hitOrNotToHit = 1; // the CPU must hit as they are losing
     } else if (handValue = p1.getHandValue()) {
         if (noOfCards > p1.getNoOfCards()) {
-            hitOrNotToHit = 1;
+            hitOrNotToHit = 1; // the CPU must hit as they are losing
         } else if (noOfCards == p1.getNoOfCards()) {
-            float probMultiplier = (21 - handValue) / 13.0;
+            float probMultiplier = (21 - handValue) / 13.0; // based on the probability the next card will work, and a randomly generated coefficient, the CPU will hit.
             if (probMultiplier > yoloCoefficient) {
                 hitOrNotToHit = 1;
             }
@@ -249,20 +263,12 @@ int Hand::CPUAIDecision(int theme, Hand p1) { // CPU = player 2
             //debugging lines
             //std::cout << "pM: " << probMultiplier << std::endl;
         }
-    } else {
-        float probMultiplier = (21 - handValue) / 13.0;
-        if (probMultiplier > yoloCoefficient) {
-            hitOrNotToHit = 1;
-        }
-
-        //std::cout << "pM: " << probMultiplier << std::endl;
     }
-        
-    //std::cout << "yC: " << yoloCoefficient << std::endl;
 
     return hitOrNotToHit;
 }
 
+// draws the menu
 void DrawMenu(FEHIcon::Icon *top, FEHIcon::Icon *bottom) {
     FEHImage titlescreen;
     FEHImage exitimg;
@@ -283,6 +289,7 @@ void DrawMenu(FEHIcon::Icon *top, FEHIcon::Icon *bottom) {
     LCD.Update();
 }
 
+// draws the back button
 void DrawBack() {
     FEHImage backimg;
     
@@ -293,6 +300,7 @@ void DrawBack() {
     LCD.Update();
 }
 
+// draws the statistics
 void DrawStatistics() {
     FEHImage statsimg;
 
@@ -303,6 +311,7 @@ void DrawStatistics() {
     LCD.Update();
 }
 
+// draws the rules screen
 void DrawRules() {
     FEHImage rulesimg;
 
@@ -313,6 +322,7 @@ void DrawRules() {
     LCD.Update();
 }
 
+// draws the theme select menu
 void DrawThemeSelect(int theme) {
     FEHImage themeimg;
 
@@ -337,6 +347,7 @@ void DrawThemeSelect(int theme) {
     LCD.Update();
 }
 
+// draws the credits
 void DrawCredits() {
     FEHImage creditsimg;
 
@@ -347,6 +358,7 @@ void DrawCredits() {
     LCD.Update();
 }
 
+// draws the game board
 void DrawBoard(int theme) {
 
     if (theme == 0) {
@@ -367,6 +379,7 @@ void DrawBoard(int theme) {
 
 }
 
+// draws the hit and stand button
 void DrawHitStand(FEHIcon::Icon *hit, FEHIcon::Icon *stand, int theme) {
 
     char hitIcon[1][20] = {"H"};
@@ -393,6 +406,7 @@ void DrawHitStand(FEHIcon::Icon *hit, FEHIcon::Icon *stand, int theme) {
     }
 }
 
+// draws the arrow indicating whose turn it is
 void DrawArrow(int player, int theme) {
     FEHImage downarrowimg;
     FEHImage uparrowimg;
@@ -420,6 +434,7 @@ void DrawArrow(int player, int theme) {
     }
 }
 
+// :)
 void DrawEE() {
     FEHImage EEimg;
 
@@ -431,7 +446,7 @@ void DrawEE() {
 /* Entry point to the application */
 int main() {
 
-    int repeat = 1;
+    int repeat = 1; // resets important game variables, creates FEHIcon::Icons.
     int EE = 0;
 
     float x, y, xtrash, ytrash;
@@ -462,11 +477,11 @@ int main() {
         LCD.ClearBuffer();
 
         while (!LCD.Touch(&xtrash, &ytrash)) { }
-        while (LCD.Touch(&x, &y)) { }
+        while (LCD.Touch(&x, &y)) { } // wait until a touch is made & released
 
         if (menuState == 0) { // 0 represents the main menu
-            if (top[0].Pressed(x, y, 1)) {
-                turn = 1;
+            if (top[0].Pressed(x, y, 1)) { // single player mode first loop
+                turn = 1; // reset vars
                 passCount = 0;
                 gameOver = 0;
                 deck.resetDeck();
@@ -479,7 +494,7 @@ int main() {
                 DrawHitStand(hit, stand, theme);
 
                 // GAME CODE
-                player1.Hit(&deck);
+                player1.Hit(&deck); // sets up hands for player 1 and CPU
                 player1.Hit(&deck);
                 player1.DrawHand(theme);
                 LCD.WriteAt("Count:", 110, 165);
@@ -494,8 +509,8 @@ int main() {
                 LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
                 DrawArrow(1, theme);
 
-            } else if (top[1].Pressed(x, y, 1)) {
-                turn = 1;
+            } else if (top[1].Pressed(x, y, 1)) { // multi player mode first loop
+                turn = 1; // reset vars
                 passCount = 0;
                 gameOver = 0;
                 deck.resetDeck();
@@ -508,7 +523,7 @@ int main() {
                 DrawHitStand(hit, stand, theme);
 
                 // GAME CODE
-                player1.Hit(&deck);
+                player1.Hit(&deck); // sets up hands for player 1 and player 2
                 player1.Hit(&deck);
                 player1.DrawHand(theme);
                 LCD.WriteAt("Count:", 110, 165);
@@ -523,14 +538,14 @@ int main() {
                 LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
                 DrawArrow(1, theme);
                 
-            } else if (bottom[0].Pressed(x, y, 1)){
+            } else if (bottom[0].Pressed(x, y, 1)){ // statistics page
                 LCD.Clear();
                 DrawBack();
                 menuState = 1;
 
                 DrawStatistics();
                 LCD.SetFontColor(RED);
-                LCD.WriteAt("Wins: ", 118, 65);
+                LCD.WriteAt("Wins: ", 118, 65); // actual statistics
                 LCD.WriteAt(p1W, 188, 65);
                 LCD.WriteAt("Losses: ", 108, 85);
                 LCD.WriteAt(p1L, 198, 85);
@@ -543,7 +558,7 @@ int main() {
                 LCD.WriteAt(p2L, 198, 170);
                 LCD.WriteAt("Ties: ", 118, 190);
                 LCD.WriteAt(p2T, 188, 190);
-            } else if (bottom[1].Pressed(x, y, 1)){
+            } else if (bottom[1].Pressed(x, y, 1)){ // rules page
                 LCD.Clear();
                 DrawBack();
                 menuState = 1;
@@ -556,18 +571,18 @@ int main() {
                 menuState = 2; // 2 represents user is selecting a theme
 
                 DrawThemeSelect(theme);
-            } else if (bottom[3].Pressed(x, y, 1)){
+            } else if (bottom[3].Pressed(x, y, 1)){ // credits page
                 LCD.Clear();
                 DrawBack();
                 menuState = 10;
 
                 DrawCredits();
-            } else if (6 <= x && x < (6 + 12) && 6 <= y && y < (6 + 9)) {
+            } else if (6 <= x && x < (6 + 12) && 6 <= y && y < (6 + 9)) { // x out of application button.
                 repeat = 0;
             }
 
         } else if (menuState == 1 || menuState == 2 || menuState == 10) { // any of the sub-menus / games
-            if (7 <= x && x < (7 + 42) && 7 <= y && y < (7 + 14)) {
+            if (7 <= x && x < (7 + 42) && 7 <= y && y < (7 + 14)) { // back button
                 LCD.Clear();
                 DrawMenu(top, bottom);
                 menuState = 0;
@@ -575,40 +590,35 @@ int main() {
             }
 
             if (menuState == 2) { // theme select
-
-                if (52 <= x && x < 270 && 78 <= y && y < 123) {
+                if (52 <= x && x < 270 && 78 <= y && y < 123) { // casino hitbox
                     theme = 0;
                     DrawThemeSelect(theme);
-                } else if (52 <= x && x < 270 && 127 <= y && y < 172) {
+                } else if (52 <= x && x < 270 && 127 <= y && y < 172) { // ocean hitbox
                     theme = 1;
                     DrawThemeSelect(theme);
-                } else if (52 <= x && x < 270 && 176 <= y && y < 221) {
+                } else if (52 <= x && x < 270 && 176 <= y && y < 221) { // buckeyes hitbox
                     theme = 2;
                     DrawThemeSelect(theme);
                 }
             }
 
-            if (menuState == 10) {
-
+            if (menuState == 10) { // :)
                 if (86 <= x && x < (86+148) && 133 <= y && y < (133+11)) {
                     EE++;
                 }
-                
                 if (EE >= 7) {
                     DrawEE();
                 }
-                
             }
-
         } else if (menuState == 3) { // actual game (1-player)
-            if (turn == 1) {
+            if (turn == 1) { // matched for similarility
 
-                if (hit[0].Pressed(x, y, 1)) {
+                if (hit[0].Pressed(x, y, 1)) { // if player 1 hits...
                     LCD.Clear(BLACK);
                     DrawBoard(theme);
                     DrawHitStand(hit, stand, theme);
 
-                    player1.Hit(&deck);
+                    player1.Hit(&deck); // hit and draw the hands
                     player1.DrawHand(theme);
                     player2.DrawHand(theme);
 
@@ -620,15 +630,15 @@ int main() {
                     LCD.WriteAt("CPU'S TURN", 100, 112);
                     passCount = 0;
                     
-                    CPUDecision = player2.CPUAIDecision(theme, player1);
+                    CPUDecision = player2.CPUAIDecision(theme, player1); // CPU makes a decision
                     if (CPUDecision == 0) {
                         passCount++;
                     } else if (CPUDecision == 1) {
-                        player2.Hit(&deck);
-                        passCount = 0;
+                        player2.Hit(&deck); // hit if CPU decides
+                        passCount = 0; // resets stand/pass count
                     }
 
-                    if (theme == 0) {
+                    if (theme == 0) { // resets center text
                         LCD.SetFontColor(FORESTGREEN);
                         LCD.FillRectangle(95, 110, 150, 20);
                         LCD.FillRectangle(110, 60, 100, 30);
@@ -647,8 +657,8 @@ int main() {
                     LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
                     DrawArrow(1, theme);
 
-                } else if (stand[0].Pressed(x, y, 1)) {
-                    LCD.Clear(BLACK);
+                } else if (stand[0].Pressed(x, y, 1)) { // if player 1 stands...
+                    LCD.Clear(BLACK);  // draw board, buttons, and hands
                     DrawBoard(theme);
                     DrawHitStand(hit, stand, theme);
 
@@ -663,7 +673,7 @@ int main() {
                     LCD.WriteAt("CPU'S TURN", 100, 112);
                     passCount++;
 
-                    CPUDecision = player2.CPUAIDecision(theme, player1);
+                    CPUDecision = player2.CPUAIDecision(theme, player1); // same as above
                     if (CPUDecision == 0) {
                         passCount++;
                     } else if (CPUDecision == 1) {
@@ -693,52 +703,60 @@ int main() {
 
             }
 
-            if (player1.getHandValue() > 21) { //bust conditions
+            // win conditions as follows
+            if (player1.getHandValue() > 21) { //if player 1 busts
                 LCD.Clear(BLACK);
                 DrawBoard(theme);
                 DrawHitStand(hit, stand, theme);
 
-                p1L++;
+                p1L++; //statistics
                 p2W++;
-                gameOver = 1;
+                gameOver = 1; // represents when the game is over to kill while loop
                 LCD.WriteRC("PLAYER 1 BUSTS", 6, 6);
                 LCD.WriteRC("PLAYER 2 WINS", 7, 6);
-            } else if (player2.getHandValue() > 21) {
+                LCD.WriteRC("CLICK TO EXIT", 8, 6);
+            } else if (player2.getHandValue() > 21) { //if player 2 busts
                 LCD.Clear(BLACK);
                 DrawBoard(theme);
                 DrawHitStand(hit, stand, theme);
 
-                p2L++;
+                p2L++; //statistics
                 p1W++;
                 gameOver = 1;
                 LCD.WriteRC("PLAYER 2 BUSTS", 6, 6);
                 LCD.WriteRC("PLAYER 1 WINS", 7, 6);
+                LCD.WriteRC("CLICK TO EXIT", 8, 6);
             } else if (passCount >= 2) { // both stand condition
                 LCD.Clear(BLACK);
                 DrawBoard(theme);
                 DrawHitStand(hit, stand, theme);
 
                 gameOver = 1;
-                if (player1.getHandValue() > player2.getHandValue()) {
+                if (player1.getHandValue() > player2.getHandValue()) { // individual win cases
                     p2L++;
                     p1W++;
                     LCD.WriteRC("PLAYER 1 WINS", 6, 6);
+                    LCD.WriteRC("CLICK TO EXIT", 8, 6);
                 } else if (player2.getHandValue() > player1.getHandValue()) {
                     p1L++;
                     p2W++;
                     LCD.WriteRC("PLAYER 2 WINS", 6, 6);
+                    LCD.WriteRC("CLICK TO EXIT", 8, 6);
                 } else if (player1.getNoOfCards() < player2.getNoOfCards()) {
                     p2L++;
                     p1W++;
                     LCD.WriteRC("PLAYER 1 WINS", 6, 6);
+                    LCD.WriteRC("CLICK TO EXIT", 8, 6);
                 } else if (player2.getNoOfCards() < player1.getNoOfCards()) {
                     p1L++;
                     p2W++;
                     LCD.WriteRC("PLAYER 2 WINS", 6, 6);
+                    LCD.WriteRC("CLICK TO EXIT", 8, 6);
                 } else {
                     p1T++;
                     p2T++;
                     LCD.WriteRC("TIE", 6, 12);
+                    LCD.WriteRC("CLICK TO EXIT", 8, 6);
                 }
             }
             
@@ -751,9 +769,8 @@ int main() {
             LCD.WriteAt(player2.getHandValue(), 185, 60);
 
         } else if (menuState == 4) { // actual game (2-player)
-            if (turn == 1) {
-
-                if (hit[0].Pressed(x, y, 1)) {
+            if (turn == 1) { // player 1's turn
+                if (hit[0].Pressed(x, y, 1)) { // player 1 hits
                     LCD.Clear(BLACK);
                     DrawBoard(theme);
                     DrawHitStand(hit, stand, theme);
@@ -763,8 +780,8 @@ int main() {
                     LCD.WriteAt("PLAYER 2'S TURN", 70, 112);
                     DrawArrow(2, theme);
                     turn++;
-                    passCount = 0;
-                } else if (stand[0].Pressed(x, y, 1)) {
+                    passCount = 0; // reset pass/stand count
+                } else if (stand[0].Pressed(x, y, 1)) { // player 2 stands
                     LCD.Clear(BLACK);
                     DrawBoard(theme);
                     DrawHitStand(hit, stand, theme);
@@ -775,9 +792,8 @@ int main() {
                     passCount++;
                 }
 
-            } else if (turn == 2) {
-
-                if (hit[0].Pressed(x, y, 1)) {
+            } else if (turn == 2) { // player 2's turn
+                if (hit[0].Pressed(x, y, 1)) { // player 1 hits
                     LCD.Clear(BLACK);
                     DrawBoard(theme);
                     DrawHitStand(hit, stand, theme);
@@ -787,8 +803,8 @@ int main() {
                     LCD.WriteAt("PLAYER 1'S TURN", 70, 112);
                     DrawArrow(1, theme);
                     turn--;
-                    passCount = 0;
-                } else if (stand[0].Pressed(x, y, 1)){
+                    passCount = 0; // reset pass/stand count
+                } else if (stand[0].Pressed(x, y, 1)){ // player 2 stands
                     LCD.Clear(BLACK);
                     DrawBoard(theme);
                     DrawHitStand(hit, stand, theme);
@@ -798,10 +814,9 @@ int main() {
                     turn--;
                     passCount++;
                 }
-
             }
 
-            if (player1.getHandValue() > 21) { //bust conditions
+            if (player1.getHandValue() > 21) { //same as above
                 LCD.Clear(BLACK);
                 DrawBoard(theme);
                 DrawHitStand(hit, stand, theme);
@@ -811,6 +826,7 @@ int main() {
                 gameOver = 1;
                 LCD.WriteRC("PLAYER 1 BUSTS", 6, 6);
                 LCD.WriteRC("PLAYER 2 WINS", 7, 6);
+                LCD.WriteRC("CLICK TO EXIT", 8, 6);
             } else if (player2.getHandValue() > 21) {
                 LCD.Clear(BLACK);
                 DrawBoard(theme);
@@ -821,6 +837,7 @@ int main() {
                 gameOver = 1;
                 LCD.WriteRC("PLAYER 2 BUSTS", 6, 6);
                 LCD.WriteRC("PLAYER 1 WINS", 7, 6);
+                LCD.WriteRC("CLICK TO EXIT", 8, 6);
             } else if (passCount >= 2) { // both stand condition
                 LCD.Clear(BLACK);
                 DrawBoard(theme);
@@ -831,25 +848,28 @@ int main() {
                     p2L++;
                     p1W++;
                     LCD.WriteRC("PLAYER 1 WINS", 6, 6);
+                    LCD.WriteRC("CLICK TO EXIT", 8, 6);
                 } else if (player2.getHandValue() > player1.getHandValue()) {
                     p1L++;
                     p2W++;
                     LCD.WriteRC("PLAYER 2 WINS", 6, 6);
+                    LCD.WriteRC("CLICK TO EXIT", 8, 6);
                 } else if (player1.getNoOfCards() < player2.getNoOfCards()) {
                     p2L++;
                     p1W++;
                     LCD.WriteRC("PLAYER 1 WINS", 6, 6);
+                    LCD.WriteRC("CLICK TO EXIT", 8, 6);
                 } else if (player2.getNoOfCards() < player1.getNoOfCards()) {
                     p1L++;
                     p2W++;
                     LCD.WriteRC("PLAYER 2 WINS", 6, 6);
+                    LCD.WriteRC("CLICK TO EXIT", 8, 6);
                 } else {
                     p1T++;
                     p2T++;
                     LCD.WriteRC("TIE", 6, 12);
+                    LCD.WriteRC("CLICK TO EXIT", 8, 6);
                 }
-
-                
             }
             
             player1.DrawHand(theme);
@@ -859,10 +879,9 @@ int main() {
             LCD.WriteAt(player1.getHandValue(), 185, 165);
             LCD.WriteAt("Count:", 110, 60);
             LCD.WriteAt(player2.getHandValue(), 185, 60);
-
         }
 
-        if (gameOver == 1 && repeat == 1) {
+        if (gameOver == 1 && repeat == 1) { // if the game is over, exit to main menu when screen is clicked.
             while (!LCD.Touch(&xtrash, &ytrash)) { }
             while (LCD.Touch(&x, &y)) { }
 
@@ -873,9 +892,9 @@ int main() {
         }
         
         LCD.Update();
-
-        Sleep(0.05);
+        Sleep(0.05); // touch buffer
     }
 
     return 0;
 }
+//woohoo!
