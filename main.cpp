@@ -1,3 +1,6 @@
+// Complete Nine Plus Ten code for FEH's Software Development Project.
+// References include the FEH Proteus Guide and the Simple Wikipedia page for Blackjack.
+
 #include "FEHLCD.h"
 #include "FEHUtility.h"
 #include "FEHImages.h"
@@ -46,8 +49,9 @@ Deck::Deck() {
     }
 }
 
+// generates and returns a unique random card
 //Aditya
-char* Deck::DrawRandomCard() { // issues a unique random card
+char* Deck::DrawRandomCard() {
     int randIndex = Random.RandInt() % 51;
 
     for (int i = 0; i < dealtcardindex; i++) {
@@ -72,7 +76,7 @@ void Deck::resetDeck() {
 }
 
 
-// holds the hand of a player. includes hand-specific variables. player 2 is the CPU in single player mode.
+// holds the hand of a player. includes hand-specific variables and getters. player 2 is the CPU in single player mode.
 // Aditya
 class Hand {
     public: 
@@ -95,7 +99,7 @@ class Hand {
         float yoloCoefficient;
 };
 
-// constructor, resets everything to 0
+// constructor, resets everything to 0 for a specific player
 Hand::Hand(int player) {
     playerNo = player;
     noOfCards = 0;
@@ -108,7 +112,7 @@ Hand::Hand(int player) {
     }
 }
 
-// draws an unique random card
+// draws an unique random card from the passed-in deck and adds it to the cardsInHand array
 // Aaryan & Aditya
 void Hand::Hit(Deck *deckptr) {
     strcpy(cardsInHand[noOfCards], deckptr -> DrawRandomCard());
@@ -154,7 +158,7 @@ int Hand::getAces() {
     return noOfAces;
 }
 
-// resets everything to 0
+// resets everything to 0 for a specific player
 void Hand::resetHand(int player) {
     playerNo = player;
     noOfCards = 0;
@@ -167,7 +171,7 @@ void Hand::resetHand(int player) {
     }
 }
 
-// Uses the FEHIcon method to draw the hands
+// Uses the FEHIcon method to draw the hands of a specific player in a specific theme 
 // Aaryan & Aditya
 void Hand::DrawHand(int theme) {
     if (playerNo == 1) {
@@ -207,7 +211,8 @@ void Hand::DrawHand(int theme) {
     }
 }
 
-// 'AI' that makes moves in single-player mode, the CPU is player 2.
+// 'AI' that makes intelligent moves based on player 1's hand for the single-player mode, the CPU is player 2.
+// The CPU decision dots are based on the theme selected.
 // Aditya
 int Hand::CPUAIDecision(int theme, Hand p1) {
     if (theme == 0) { // three thinking dots 
@@ -277,7 +282,7 @@ int Hand::CPUAIDecision(int theme, Hand p1) {
 
 // All draw functions worked on both Aaryan and Aditya
 
-// draws the menu
+// draws the menu with the top and bottom Icons passed in.
 void DrawMenu(FEHIcon::Icon *top, FEHIcon::Icon *bottom) {
     FEHImage titlescreen;
     FEHImage exitimg;
@@ -331,7 +336,7 @@ void DrawRules() {
     LCD.Update();
 }
 
-// draws the theme select menu
+// draws the theme select menu, text is in that specific theme
 void DrawThemeSelect(int theme) {
     FEHImage themeimg;
 
@@ -367,7 +372,7 @@ void DrawCredits() {
     LCD.Update();
 }
 
-// draws the game board
+// draws the game board according to a specific theme
 void DrawBoard(int theme) {
 
     if (theme == 0) {
@@ -388,7 +393,7 @@ void DrawBoard(int theme) {
 
 }
 
-// draws the hit and stand button
+// draws the hit and stand button based on a specific theme. The Hit and Stand FEHIcons are passed in to draw the array.
 void DrawHitStand(FEHIcon::Icon *hit, FEHIcon::Icon *stand, int theme) {
 
     char hitIcon[1][20] = {"H"};
@@ -415,7 +420,7 @@ void DrawHitStand(FEHIcon::Icon *hit, FEHIcon::Icon *stand, int theme) {
     }
 }
 
-// draws the arrow indicating whose turn it is
+// draws the arrow indicating whose turn it is. the theme and player determines the color and direction the arrow faces.
 void DrawArrow(int player, int theme) {
     FEHImage downarrowimg;
     FEHImage uparrowimg;
@@ -453,7 +458,7 @@ void DrawEE() {
 }
 
 // worked on by both Aaryan and Aditya
-/* Entry point to the application */
+/* Entry point to the game */
 int main() {
 
     int repeat = 1; // resets important game variables, creates FEHIcon::Icons.
